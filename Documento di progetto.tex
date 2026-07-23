@@ -46,4 +46,23 @@ Per la rappresentazione in memoria delle entit\`a coinvolte si adottano le segue
     \item \textbf{Griglia:} Array dinamico (\texttt{vector}) per la gestione della collezione di punti.
 \end{itemize}
 
+\subsection{Sottomodulo 2: Esportazione dei dati su file}
+
+\subsubsection{Specifiche e Funzionalit\`a}
+Questo componente gestisce la persistenza su disco delle informazioni inerenti al dominio e alla struttura del grafo associato alla discretizzazione.
+\begin{itemize}
+    \item \textbf{Input:} Griglia di punti, lista degli archi, lista dei nodi.
+    \item \textbf{Output:} File di testo su memoria secondaria.
+\end{itemize}
+
+Nello specifico, il sottomodulo mette a disposizione le funzionalit\`a necessarie per:
+\begin{itemize}
+    \item La generazione e scrittura di un file contenente la lista dei soli punti interni della griglia (escludendo i punti appartenenti al bordo).
+    \item La generazione di un file contenente la lista degli archi che compongono il grafo.
+    \item La generazione di un file contenente la lista dei nodi del grafo.
+\end{itemize}
+
+\subsubsection{Strutture Dati}
+Per la fase di esportazione non si rendono necessarie strutture dati complesse aggiuntive in RAM. L'operazione richiede esclusivamente l'apertura e la gestione di canali di comunicazione con lo spazio di I/O (stream di output su file) per la scrittura sequenziale dei dati immagazzinati nelle strutture preesistenti.
+
 \end{document}
