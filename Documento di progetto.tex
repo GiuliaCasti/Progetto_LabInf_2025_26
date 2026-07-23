@@ -46,6 +46,9 @@ Per la rappresentazione in memoria delle entit\`a coinvolte si adottano le segue
     \item \textbf{Griglia:} Array dinamico (\texttt{vector}) per la gestione della collezione di punti.
 \end{itemize}
 
+\subsubsection{Complessit\`a Attesa}
+La generazione della griglia richiede di iterare su tutti i punti del dominio discretizzato per un totale di $(N+1)^2$ elementi. La complessit\`a temporale attesa \`e dunque $O(N^2)$, poich\'e il calcolo delle coordinate di ciascun punto viene eseguito in tempo costante $O(1)$.
+
 \subsection{Sottomodulo 2: Esportazione dei dati su file}
 
 \subsubsection{Specifiche e Funzionalit\`a}
@@ -64,5 +67,43 @@ Nello specifico, il sottomodulo mette a disposizione le funzionalit\`a necessari
 
 \subsubsection{Strutture Dati}
 Per la fase di esportazione non si rendono necessarie strutture dati complesse aggiuntive in RAM. L'operazione richiede esclusivamente l'apertura e la gestione di canali di comunicazione con lo spazio di I/O (stream di output su file) per la scrittura sequenziale dei dati immagazzinati nelle strutture preesistenti.
+
+\subsubsection{Complessit\`a Attesa}
+Le operazioni di scrittura su memoria di massa richiedono l'attraversamento sequenziale delle strutture dati ricevute in input. La complessit\`a temporale attesa \`e $O(V + E) = O(N^2)$, in quanto la scrittura di ogni nodo e di ogni arco nel relativo stream di output richiede un numero di operazioni proporzionale alla dimensione del grafo.
+
+\subsection{Sottomodulo 3: Creazione del grafo di adiacenza}
+
+\subsubsection{Specifiche e Funzionalit\`a}
+Il componente si occupa della modellizzazione topologica dei nodi interni mediante la costruzione di un grafo non orientato.
+\begin{itemize}
+    \item \textbf{Input:} Intero $N$ che determina la discretizzazione uniforme del dominio quadrato $[0, 1]^2$.
+    \item \textbf{Output:} Grafo non orientato $G = (V, E)$.
+\end{itemize}
+
+Il grafo modellato soddisfa le seguenti caratteristiche:
+\begin{itemize}
+    \item Ogni nodo in $V$ rappresenta un punto interno della griglia (escludendo i nodi di bordo).
+    \item Ogni arco in $E$ rappresenta una relazione di adiacenza orizzontale o verticale tra punti vicini (struttura a 5 punti).
+    \item Ogni nodo possiede coordinate geometriche $(x, y)$ associate.
+\end{itemize}
+
+Le funzionalit\`a richieste per questo sottomodulo includono:
+\begin{itemize}
+    \item Generazione dei soli punti interni della griglia.
+    \item Assegnazione di identificatori numerici progressivi ai nodi.
+    \item Costruzione delle relazioni di adiacenza tra nodi adiacenti.
+    \item Esportazione dei dati nei file \texttt{coords.txt} e \texttt{connectivity.txt}.
+    \item Supporto a successivi riordinamenti dei nodi (es. indicizzazione per algoritmi di fill-in reduction).
+\end{itemize}
+
+\subsubsection{Strutture Dati}
+Per rappresentare la topologia del grafo in modo efficiente si suggeriscono:
+\begin{itemize}
+    \item \textbf{Liste di adiacenza:} Implementate tramite \texttt{std::vector<std::vector<int>>} per garantire una rappresentazione compatta ed efficiente del grafo sparso.
+    \item \textbf{Mappatura geometrica/topologica:} Strutture dati ausiliarie (come hash map o array bidimensionali di indicizzazione) per la conversione bidirezionale tra coordinate geometriche $(i, j)$ e identificatori numerici progressivi dei nodi.
+\end{itemize}
+
+\subsubsection{Complessit\`a Attesa}
+La costruzione del grafo e la determinazione delle adiacenze richiedono una complessit\`a temporale attesa pari a $O(|V|) = O((N-1)^2) = O(N^2)$, poich\'e il grado di ciascun nodo \`e limitato superiormente da 4 e l'identificazione dei vicini viene eseguita in tempo costante.
 
 \end{document}

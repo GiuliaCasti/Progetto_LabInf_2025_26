@@ -12,4 +12,7 @@ struct Punto {
 // Definizione globale della Griglia come vettore di Punto
 using Griglia = std::vector<Punto>;
 
+// Grafo[u] è un std::vector<int> contenente gli indici dei nodi adiacenti al nodo 'u'
+using Grafo = std::vector<std::vector<int>>;
+
 #endif  // TIPI_GLOBALI_H
