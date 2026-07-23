@@ -1,7 +1,8 @@
-
 \documentclass[twocolumn]{article}
+\usepackage[italian]{babel}
 \usepackage{graphicx}
-\usepackage[margin=2cm]{geometry} % Margini ridotti, ideali per le 2 colonne
+\usepackage{amsmath, amssymb}
+\usepackage[margin=2cm]{geometry}
 
 \title{%
   \textbf{Progetto Informatica con Laboratorio} \\[0.5em]
@@ -19,12 +20,30 @@
 
 \begin{document}
 
-% Inserisce il titolo a tutta pagina sopra le 2 colonne
-\twocolumn[
-  \begin{maketitle}
-  \end{maketitle}
-]
+\twocolumn[\maketitle]
 
 \section{Introduzione}
+Il presente documento descrive lo sviluppo e l'evoluzione software del modulo \texttt{HeatEquationSolver}, progettato per la risoluzione numerica dell'equazione del calore 2D e lo studio del riordinamento delle matrici sparse nelle fattorizzazioni di Cholesky.
+
+\section{Modulo: HeatEquationSolver}
+Lo sviluppo del solutore procede in modo modulare ed evolutivo. Di seguito vengono dettagliati i singoli sottomoduli.
+
+\subsection{Sottomodulo 1: Generazione della griglia del dominio}
+
+\subsubsection{Specifiche e Funzionalit\`a}
+Il componente si occupa della discretizzazione spaziale del dominio di calcolo.
+\begin{itemize}
+    \item \textbf{Input:} Intero $N$ che determina la discretizzazione uniforme del dominio quadrato $[0, 1]^2$.
+    \item \textbf{Output:} Griglia 2D rappresentata come insieme di punti.
+\end{itemize}
+
+La griglia \`e definita come un insieme di punti dove ogni elemento \`e identificato da una coppia di coordinate $(x, y)$. La generazione include tutti i punti del dominio, compreso il bordo, con passo spaziale $h = \frac{1}{N}$, per un totale di $(N+1) \times (N+1)$ punti.
+
+\subsubsection{Strutture Dati}
+Per la rappresentazione in memoria delle entit\`a coinvolte si adottano le seguenti scelte architetturali:
+\begin{itemize}
+    \item \textbf{Punto:} Struttura (\texttt{struct}) composta da due variabili di tipo \texttt{double} per le coordinate $x$ e $y$.
+    \item \textbf{Griglia:} Array dinamico (\texttt{vector}) per la gestione della collezione di punti.
+\end{itemize}
 
 \end{document}
