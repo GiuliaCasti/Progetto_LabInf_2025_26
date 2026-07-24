@@ -1,8 +1,8 @@
-#include "GeneratoreFile.h"
+#include "GestioneFile.h"
 #include <fstream>
 #include <iostream>
 
-void GeneratoreFile::generaFileCoords(const Nodi& nodi, const std::string& nomeFile) {
+void GestioneFile::generaFileCoords(const Nodi& nodi, const std::string& nomeFile) {
     std::ofstream file(nomeFile);
     if (!file.is_open()) {
         std::cerr << "Errore: Impossibile aprire il file " << nomeFile << " per la scrittura.\n";
@@ -20,7 +20,7 @@ void GeneratoreFile::generaFileCoords(const Nodi& nodi, const std::string& nomeF
     file.close();
 }
 
-void GeneratoreFile::generaFileConnectivity(const Archi& archi, const std::string& nomeFile) {
+void GestioneFile::generaFileConnectivity(const Archi& archi, const std::string& nomeFile) {
     std::ofstream file(nomeFile);
     if (!file.is_open()) {
         std::cerr << "Errore: Impossibile aprire il file " << nomeFile << " per la scrittura.\n";

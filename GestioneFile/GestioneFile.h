@@ -4,7 +4,7 @@
 #include <string>
 #include "../TipiGlobali.h"
 
-class GeneratoreFile {
+class GestioneFile {
 public:
     // Funzione per generare il file coords.txt contentente la lista di tutti i punti interni del dominio con 
     // - il loro indice progressivo n

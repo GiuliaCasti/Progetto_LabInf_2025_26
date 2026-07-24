@@ -2,7 +2,7 @@
 #include "../TipiGlobali.h"
 #include "GeneratoreGriglia.h"
 #include "GeneratoreGrafo.h"
-#include "../GeneratoreFile/GeneratoreFile.h"
+#include "../GestioneFile/GestioneFile.h"
 
 void stampaGriglia(const Griglia& griglia) {
     std::cout << "Punti generati (Totale: " << griglia.size() << "):\n";
@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
     stampaNodi(nodi);
 
     // Salva le coordinate dei nodi in un file
-    GeneratoreFile::generaFileCoords(nodi, "../FileGenerati/coords.txt");
+    GestioneFile::generaFileCoords(nodi, "../FileGenerati/coords.txt");
 
     // Genera gli archi del grafo dai nodi interni
     Archi archi = GeneratoreGrafo::generaArchiInterni(nodi);
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
     // stampaArchi(archi);
 
     // Salva la connettività del grafo in un file
-    GeneratoreFile::generaFileConnectivity(archi, "../FileGenerati/connectivity.txt");
+    GestioneFile::generaFileConnectivity(archi, "../FileGenerati/connectivity.txt");
 
     return 0;
 }

@@ -106,4 +106,35 @@ Per rappresentare la topologia del grafo in modo efficiente si suggeriscono:
 \subsubsection{Complessit\`a Attesa}
 La costruzione del grafo e la determinazione delle adiacenze richiedono una complessit\`a temporale attesa pari a $O(|V|) = O((N-1)^2) = O(N^2)$, poich\'e il grado di ciascun nodo \`e limitato superiormente da 4 e l'identificazione dei vicini viene eseguita in tempo costante.
 
+\subsection{Sottomodulo 4: Costruzione dell'ordinamento dei nodi}
+
+\subsubsection{Specifiche e Funzionalit\`a}
+Questo sottomodulo implementa la tecnica di riordinamento dei nodi del grafo per ridurre il fenomeno del \textit{fill-in} durante la successiva fattorizzazione di Cholesky della matrice associata.
+\begin{itemize}
+    \item \textbf{Input:} File \texttt{coords.txt} (coordinate dei nodi) e \texttt{connectivity.txt} (topologia degli archi del grafo).
+    \item \textbf{Output:} File contenente la sequenza ordinata degli identificatori dei nodi (permutazione).
+\end{itemize}
+
+Le funzionalit\`a richieste comprendono:
+\begin{itemize}
+    \item Lettura ed elabarorazione del grafo di adiacenza a partire dai file d'ingresso.
+    \item Riordinamento dei nodi tramite una procedura ricorsiva basata su strategie di partizionamento (es. Dissecazione Annidata / \textit{Nested Dissection}).
+    \item Identificazione ricorsiva di separatori di vertici che dividono il grafo in sottografi disgiunti, numerando prima i sotto-problemi e infine il separatore.
+\end{itemize}
+
+\subsubsection{Strutture Dati}
+Per supportare la procedura ricorsiva di riordinamento si suggeriscono:
+\begin{itemize}
+    \item \textbf{Permutazione dei nodi:} Un \texttt{std::vector<int>} per memorizzare l'ordine finale dei nodi.
+    \item \textbf{Mappatura dei sottografi:} Strutture ausiliarie (come vettori di flag booleani \texttt{std::vector<bool>} o sottoliste di vertici) per tracciare i nodi attivi in ciascuna chiamata ricorsiva.
+    \item \textbf{Coda / Pila ausiliaria:} Strutture dati di supporto (\texttt{std::queue} o \texttt{std::vector}) per la ricerca e l'individuazione del separatore di vertici (es. tramite viste BFS/RCM).
+\end{itemize}
+
+\subsubsection{Complessit\`a Attesa}
+La procedura ricorsiva di dissecazione divide il dominio ad ogni livello. La complessit\`a temporale attesa dipende dal costo del partizionamento ad ogni livello di ricorsione $d = O(\log N)$:
+\begin{itemize}
+    \item Il costo per trovare un separatore su un sottografo con $V'$ nodi \`e proporzionale alle dimensioni del sottografo stesso, ossia $O(V')$.
+    \item Risolvendo la relazione di ricorrrenza $T(V') = 2 T(V'/2) + O(V')$, si ottiene una complessit\`a temporale complessiva attesa di $O(|V| \log |V|) = O(N^2 \log N)$.
+\end{itemize}
+
 \end{document}
