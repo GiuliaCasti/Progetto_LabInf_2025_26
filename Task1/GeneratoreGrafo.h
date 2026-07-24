@@ -6,7 +6,10 @@
 class GeneratoreGrafo {
 public:
     // Genera il grafo di adiacenza per i soli nodi INTERNI di una griglia N x N.
-    static Grafo generaGrafoInterno(int N);
+    static Nodi generaNodiInterni(int N);
+
+    // Genera gli archi di adiacenza per i soli nodi INTERNI di una griglia N x N.
+    static Archi generaArchiInterni(const Nodi& nodi);
 };
 
 

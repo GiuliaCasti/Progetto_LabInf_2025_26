@@ -2,7 +2,7 @@
 #include "../TipiGlobali.h"
 #include "GeneratoreGriglia.h"
 #include "GeneratoreGrafo.h"
-
+#include "../GeneratoreFile/GeneratoreFile.h"
 
 void stampaGriglia(const Griglia& griglia) {
     std::cout << "Punti generati (Totale: " << griglia.size() << "):\n";
@@ -13,34 +13,59 @@ void stampaGriglia(const Griglia& griglia) {
     }
 }
 
-void stampaGrafo(const Grafo& grafo) {
-    std::cout << "Nodi del grafo generati (Totale: " << grafo.size() << "):\n";
-    for (size_t k = 0; k < grafo.size(); ++k) {
-        std::cout << "Nodo " << grafo[k].id << ": (" 
-                  << grafo[k].punto.x << ", " 
-                  << grafo[k].punto.y << ") -> Adiacenti: [ ";
+void stampaNodi(const Nodi& nodi) {
+    std::cout << "Nodi del grafo generati (Totale: " << nodi.size() << "):\n";
+    for (size_t k = 0; k < nodi.size(); ++k) {
+        std::cout << "Nodo " << nodi[k].id << " - Coordinate: ("
+                  << nodi[k].punto.x << ", " 
+                  << nodi[k].punto.y << ") - Indice: ("
+                  << nodi[k].indice.i << ", " 
+                  << nodi[k].indice.j << ") -> Adiacenti: [ ";
         
         // Stampa dei vicini adiacenti
-        for (size_t j = 0; j < grafo[k].adiacenti.size(); ++j) {
-            std::cout << grafo[k].adiacenti[j] << " ";
+        for (size_t j = 0; j < nodi[k].adiacenti.size(); ++j) {
+            std::cout << nodi[k].adiacenti[j] << " ";
         }
         
         std::cout << "]\n";
     }
 }
 
-int main(int argc, char* argv[]) {
-    int N = 3; // Discretizzazione 3x3 (combinazione di 0.0, 0.5, 1.0)
+void stampaArchi(const Archi& archi) {
+    std::cout << "Archi del grafo generati (Totale: " << archi.size() << "):\n";
+    for (const auto& arco : archi) {
+        std::cout << "Arco " << arco.id << ": Nodo " 
+                  << arco.nodo1 << " <-> Nodo " 
+                  << arco.nodo2 << "\n";
+    }
+}
 
+int main(int argc, char* argv[]) {
+    int N = 5;
+
+    // Genera la griglia [0, 1]^2 con discretizzazione (N+2) x (N+2)
     Griglia griglia = GeneratoreGriglia::generaGriglia(N);
 
     // Stampa dei punti generati
-    stampaGriglia(griglia);
+    // stampaGriglia(griglia);
 
-    Grafo grafo = GeneratoreGrafo::generaGrafoInterno(N);
+    // Genera i nodi interni del grafo dalla griglia
+    Nodi nodi = GeneratoreGrafo::generaNodiInterni(N);
 
-    // Stampa del grafo generato
-    stampaGrafo(grafo);
+    // Stampa dei nodi generati
+    stampaNodi(nodi);
+
+    // Salva le coordinate dei nodi in un file
+    GeneratoreFile::generaFileCoords(nodi, "../FileGenerati/coords.txt");
+
+    // Genera gli archi del grafo dai nodi interni
+    Archi archi = GeneratoreGrafo::generaArchiInterni(nodi);
+
+    // Stampa degli archi generati
+    // stampaArchi(archi);
+
+    // Salva la connettività del grafo in un file
+    GeneratoreFile::generaFileConnectivity(archi, "../FileGenerati/connectivity.txt");
 
     return 0;
 }

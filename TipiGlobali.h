@@ -9,16 +9,32 @@ struct Punto {
     double y;
 };
 
+// Indice di un punto nella griglia o nel grafo
+struct IndicePunto {
+    int i; // indice x
+    int j; // indice y
+};
+
 // Definizione globale della Griglia come vettore di Punto
 using Griglia = std::vector<Punto>;
 
 struct Nodo {
     int id; // ID del nodo
+    IndicePunto indice; // Indice logico nella griglia
     Punto punto; // Coordinate del nodo
     std::vector<int> adiacenti; // Indici dei nodi adiacenti
 };
 
-// Grafo[u] è un std::vector<int> contenente gli indici dei nodi adiacenti al nodo 'u'
-using Grafo = std::vector<Nodo>;
+struct Arco{
+    int id;
+    int nodo1; // ID del primo nodo
+    int nodo2; // ID del secondo nodo
+};
+
+// Nodi è un std::vector<Nodo> contenente tutti i nodi del grafo, dove ogni Nodo ha un ID, un IndicePunto, un Punto e una lista di adiacenti.
+using Nodi = std::vector<Nodo>;
+
+// Archi è un std::vector Arco> contenente tutti gli archi del grafo, dove ogni Arco ha un ID e due ID di nodi.
+using Archi = std::vector<Arco>;
 
 #endif  // TIPI_GLOBALI_H

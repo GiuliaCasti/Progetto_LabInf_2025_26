@@ -1,7 +1,7 @@
 #include "GeneratoreGrafo.h"
 #include <iostream>
 
-Grafo GeneratoreGrafo::generaGrafoInterno(int N) {
+Nodi GeneratoreGrafo::generaNodiInterni(int N) {
     // Servono almeno N >= 1 per avere dei nodi interni (con N=0 ci sono solo bordi)
     if (N < 1) {
         std::cerr << "Attenzione: Per N < 1 non esistono nodi interni nel dominio!\n";
@@ -14,7 +14,7 @@ Grafo GeneratoreGrafo::generaGrafoInterno(int N) {
     int numNodiSpazio = nInterni * nInterni;
 
     // Inizializziamo il grafo con la dimensione esatta dei soli nodi interni
-    Grafo grafo(numNodiSpazio);
+    Nodi nodi(numNodiSpazio);
 
     // Questo è un helper che serve per convertire coordinate logiche interne (i_int, j_int)
     // in un ID univoco da 0 a (numNodiSpazio - 1)
@@ -34,38 +34,55 @@ Grafo GeneratoreGrafo::generaGrafoInterno(int N) {
             int i_int = i - 1;
             int j_int = j - 1;
             
-            // ID univoco del nodo corrente nel Grafo
+            // ID univoco del nodo corrente nel nodi
             int n = getIndicePuntoInterno(i_int, j_int); 
 
             // 1. Inizializziamo i dati del Nodo corrente
-            grafo[n].id = n;
-            grafo[n].punto = { i * h, j * h }; // Coordinate reali (x, y) nel dominio [0, 1]^2
+            nodi[n].id = n;
+            nodi[n].indice = {i_int, j_int}; // Indice logico nella griglia
+            nodi[n].punto = { i * h, j * h }; // Coordinate reali (x, y) nel dominio [0, 1]^2
 
             // 2. Vicino di DESTRA (i+1, j)
             if (i < N) {
                 int v_destra = getIndicePuntoInterno(i_int + 1, j_int);
-                grafo[n].adiacenti.push_back(v_destra);
+                nodi[n].adiacenti.push_back(v_destra);
             }
 
             // 3. Vicino di SINISTRA (i-1, j)
             if (i > 1) {
                 int v_sinistra = getIndicePuntoInterno(i_int - 1, j_int);
-                grafo[n].adiacenti.push_back(v_sinistra);
+                nodi[n].adiacenti.push_back(v_sinistra);
             }
 
             // 4. Vicino in ALTO (i, j+1)
             if (j < N) {
                 int v_alto = getIndicePuntoInterno(i_int, j_int + 1);
-                grafo[n].adiacenti.push_back(v_alto);
+                nodi[n].adiacenti.push_back(v_alto);
             }
 
             // 5. Vicino in BASSO (i, j-1)
             if (j > 1) {
                 int v_basso = getIndicePuntoInterno(i_int, j_int - 1);
-                grafo[n].adiacenti.push_back(v_basso);
+                nodi[n].adiacenti.push_back(v_basso);
             }
         }
     }
 
-    return grafo;
+    return nodi;
+}
+
+Archi GeneratoreGrafo::generaArchiInterni(const Nodi& nodi){
+    Archi archi;
+    int arcoId = 0;
+
+    for (const auto& nodo : nodi) {
+        for (int adiacenteId : nodo.adiacenti) {
+            // Per evitare duplicati, aggiungiamo l'arco solo se l'ID del nodo corrente è minore di quello dell'adiacente
+            if (nodo.id < adiacenteId) {
+                archi.push_back({arcoId++, nodo.id, adiacenteId});
+            }
+        }
+    }
+
+    return archi;
 }
