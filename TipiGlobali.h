@@ -37,4 +37,10 @@ using Nodi = std::vector<Nodo>;
 // Archi è un std::vector Arco> contenente tutti gli archi del grafo, dove ogni Arco ha un ID e due ID di nodi.
 using Archi = std::vector<Arco>;
 
+// Struttura che rappresenta la mappatura tra nuovo e vecchio indice
+struct MappaturaNodo {
+    int nuovoIndice;
+    int vecchioId;
+};
+
 #endif  // TIPI_GLOBALI_H

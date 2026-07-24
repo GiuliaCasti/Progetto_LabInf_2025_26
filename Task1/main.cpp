@@ -41,7 +41,7 @@ void stampaArchi(const Archi& archi) {
 }
 
 int main(int argc, char* argv[]) {
-    int N = 5;
+    int N = 4; // Dimensione della griglia (N x N) per i nodi interni
 
     // Genera la griglia [0, 1]^2 con discretizzazione (N+2) x (N+2)
     Griglia griglia = GeneratoreGriglia::generaGriglia(N);
