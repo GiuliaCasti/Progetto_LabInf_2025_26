@@ -43,4 +43,11 @@ struct MappaturaNodo {
     int vecchioId;
 };
 
+// Elemento della matrice sparsa in formato Coordinate (COO)
+struct ElementoMatrice {
+    int i;         // Indice di riga
+    int j;         // Indice di colonna
+    double valore; // Valore A[i, j]
+};
+
 #endif  // TIPI_GLOBALI_H

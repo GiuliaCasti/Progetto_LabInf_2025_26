@@ -1,8 +1,9 @@
 #ifndef GENERATORE_FILE_H
 #define GENERATORE_FILE_H
 
+#include "../TipiGlobali.h"  // ← AGGIUNGI QUESTA RIGA
 #include <string>
-#include "../TipiGlobali.h"
+#include <vector>
 
 class GestioneFile {
 public:
@@ -29,6 +30,12 @@ public:
 
     // Funzione per salvare l'ordinamento Nested Dissection su file
     static void generaFileNodiPartizionati(const std::vector<MappaturaNodo>& ordinamento, const std::string& nomeFile);
+
+    // Funzione per salvare la matrice su file
+    static void salvaMatrice(const std::vector<ElementoMatrice>& elementiA, const std::string& nomeFile);
+
+    // Funzione per salvare il vettore dei termini noti su file
+    static void salvaTerminiNoti(const std::vector<double>& rhs, const std::string& nomeFile);
 };
 
 #endif // GENERATORE_FILE_H

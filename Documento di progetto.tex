@@ -49,7 +49,7 @@ Per la rappresentazione in memoria delle entit\`a coinvolte si adottano le segue
 \subsubsection{Complessit\`a Attesa}
 La generazione della griglia richiede di iterare su tutti i punti del dominio discretizzato per un totale di $(N+1)^2$ elementi. La complessit\`a temporale attesa \`e dunque $O(N^2)$, poich\'e il calcolo delle coordinate di ciascun punto viene eseguito in tempo costante $O(1)$.
 
-\subsection{Sottomodulo 2: Esportazione dei dati su file}
+\subsection{Sottomodulo 2: Gestione dei dati su file}
 
 \subsubsection{Specifiche e Funzionalit\`a}
 Questo componente gestisce la persistenza su disco delle informazioni inerenti al dominio e alla struttura del grafo associato alla discretizzazione.
@@ -60,9 +60,11 @@ Questo componente gestisce la persistenza su disco delle informazioni inerenti a
 
 Nello specifico, il sottomodulo mette a disposizione le funzionalit\`a necessarie per:
 \begin{itemize}
-    \item La generazione, scrittura e lettura di un file contenente la lista dei soli punti interni della griglia (escludendo i punti appartenenti al bordo).
-    \item La generazione, scrittura e lettura di un file contenente la lista degli archi che compongono il grafo.
-    \item La generazione, scrittura e lettura di un file contenente la lista dei nodi del grafo.
+    \item La generazione e scrittura di un file contenente la lista dei soli punti interni della griglia (escludendo i punti appartenenti al bordo).
+    \item La generazione di un file contenente la lista degli archi che compongono il grafo.
+    \item La generazione di un file contenente la lista dei nodi del grafo.
+    \item La generazione di un file contenente la matrice.
+    \item La generazione di un file contenente i termini noti.
 \end{itemize}
 
 \subsubsection{Strutture Dati}

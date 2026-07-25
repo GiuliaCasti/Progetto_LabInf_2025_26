@@ -116,3 +116,31 @@ void GestioneFile::generaFileNodiPartizionati(const std::vector<MappaturaNodo>& 
 
     file.close();
 }
+
+void GestioneFile::salvaMatrice(const std::vector<ElementoMatrice>& elementiA, const std::string& nomeFile) {
+    std::ofstream file(nomeFile);
+    if (!file.is_open()) {
+        std::cerr << "Errore creazione del file " << nomeFile << "\n";
+        return;
+    }
+
+    for (const auto& elem : elementiA) {
+        file << elem.i << " " << elem.j << " " << elem.valore << "\n";
+    }
+
+    file.close();
+}
+
+void GestioneFile::salvaTerminiNoti(const std::vector<double>& rhs, const std::string& nomeFile) {
+    std::ofstream file(nomeFile);
+    if (!file.is_open()) {
+        std::cerr << "Errore creazione del file " << nomeFile << "\n";
+        return;
+    }
+
+    for (double val : rhs) {
+        file << val << "\n";
+    }
+
+    file.close();
+}
