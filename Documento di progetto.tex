@@ -69,7 +69,7 @@ Nello specifico, il sottomodulo mette a disposizione le funzionalit\`a necessari
 Per la fase di esportazione non si rendono necessarie strutture dati complesse aggiuntive in RAM. L'operazione richiede esclusivamente l'apertura e la gestione di canali di comunicazione con lo spazio di I/O (stream di output su file) per la scrittura sequenziale dei dati immagazzinati nelle strutture preesistenti.
 
 \subsubsection{Complessit\`a Attesa}
-Le operazioni di scrittura su memoria di massa richiedono l'attraversamento sequenziale delle strutture dati ricevute in input. La complessit\`a temporale attesa \`e $O(V + E) = O(N^2)$, in quanto la scrittura di ogni nodo e di ogni arco nel relativo stream di output richiede un numero di operazioni proporzionale alla dimensione del grafo.
+Le operazioni di scrittura su memoria di massa richiedono l'attraversamento sequenziale delle strutture dati ricevute in input. La complessit\`a temporale attesa \`e $O(V + E) = O(N^2)$, in quanto la scrittura di ogni nodo e di ogni arco nel relativo stream di output richiede un numero di operations proporzionale alla dimensione del grafo.
 
 \subsection{Sottomodulo 3: Creazione del grafo di adiacenza}
 
@@ -117,9 +117,10 @@ Questo sottomodulo implementa la tecnica di riordinamento dei nodi del grafo per
 
 Le funzionalit\`a richieste comprendono:
 \begin{itemize}
-    \item Lettura ed elabarorazione del grafo di adiacenza a partire dai file d'ingresso.
+    \item Lettura ed elaborazione del grafo di adiacenza a partire dai file d'ingresso.
     \item Riordinamento dei nodi tramite una procedura ricorsiva basata su strategie di partizionamento (es. Dissecazione Annidata / \textit{Nested Dissection}).
     \item Identificazione ricorsiva di separatori di vertici che dividono il grafo in sottografi disgiunti, numerando prima i sotto-problemi e infine il separatore.
+    \item Scrittura della permutazione dei nodi ottenuta su file di output.
 \end{itemize}
 
 \subsubsection{Strutture Dati}
@@ -131,10 +132,65 @@ Per supportare la procedura ricorsiva di riordinamento si suggeriscono:
 \end{itemize}
 
 \subsubsection{Complessit\`a Attesa}
-La procedura ricorsiva di dissecazione divide il dominio ad ogni livello. La complessit\`a temporale attesa dipende dal costo del partizionamento ad ogni livello di ricorsione $d = O(\log N)$:
+La procedura ricorsiva di dissecazione divide il dominio ad ogni livello. La complessit\`a temporale attesa dipende dal costo del partizionamento ad ogni livello di ricorsione:
 \begin{itemize}
     \item Il costo per trovare un separatore su un sottografo con $V'$ nodi \`e proporzionale alle dimensioni del sottografo stesso, ossia $O(V')$.
-    \item Risolvendo la relazione di ricorrrenza $T(V') = 2 T(V'/2) + O(V')$, si ottiene una complessit\`a temporale complessiva attesa di $O(|V| \log |V|) = O(N^2 \log N)$.
+    \item Risolvendo la relazione di ricorrenza $T(V') = 2 T(V'/2) + O(V')$, si ottiene una complessit\`a temporale complessiva attesa di $O(|V| \log |V|) = O(N^2 \log N)$.
+\end{itemize}
+
+\subsection{Sottomodulo 5: Generazione della matrice sparsa}
+
+\subsubsection{Specifiche e Funzionalit\`a}
+Questo sottomodulo si occupa dell'assemblaggio del sistema lineare derivante dalla discretizzazione alle differenze finite dell'operatore laplaciano 2D sul dominio quadrato.
+\begin{itemize}
+    \item \textbf{Input:} Grafo di adiacenza $G=(V, E)$ (o lista dei nodi interni con topologia dei vicini) e vettore di permutazione dei nodi (opzionale per l'ordinamento).
+    \item \textbf{Output:} Matrice dei coefficienti $A$ memorizzata in un formato efficiente per matrici sparse.
+\end{itemize}
+
+Le funzionalit\`a richieste includono:
+\begin{itemize}
+    \item Costruzione dello stencil a 5 punti per l'operatore laplaciano: elemento diagonale pari a 4, elementi fuori diagonale corrispondenti ai vicini adiacenti pari a $-1$.
+    \item Applicazione dell'eventuale permutazione dei nodi ricevuta in input per strutturare la matrice secondo l'ordinamento calcolato nel sottomodulo precedente.
+    \item Rappresentazione della matrice in formato compresso per evitare l'allocazione inutilizzata di zeri.
+\end{itemize}
+
+\subsubsection{Strutture Dati}
+Per rappresentare la matrice sparsa in modo compatto si suggeriscono:
+\begin{itemize}
+    \item \textbf{Formato CSR (Compressed Sparse Row) o COO (Coordinate Format):} Vettori dinamici \texttt{std::vector<double>} per i valori dei coefficienti, \texttt{std::vector<int>} per gli indici di colonna e per i puntatori di riga.
+    \item \textbf{Mappatura delle permutazioni:} Vettore \texttt{std::vector<int>} per tradurre l'indice originario del nodo nell'indice permutato.
+\end{itemize}
+
+\subsubsection{Complessit\`a Attesa}
+Essendo lo stencil limitato a un massimo di 5 elementi non nulli per riga, il numero totale di elementi non nulli nella matrice $A$ \`e $|NZ| \le 5 |V|$. La complessit\`a temporale attesa per la costruzione della matrice sparsa \`e quindi proporzionale al numero di nodi interni: $O(|V|) = O((N-1)^2) = O(N^2)$.
+
+\subsection{Sottomodulo 6: Generazione del termine noto}
+
+\subsubsection{Specifiche e Funzionalit\`a}
+Questo sottomodulo genera il vettore dei termini noti $b$ relativo all'equazione del calore in regime stazionario o al passo temporale della discretizzazione, integrando la sorgente di calore e le condizioni al contorno.
+\begin{itemize}
+    \item \textbf{Input:} Griglia di punti interni, eventuale funzione sorgente $f(x, y)$, condizioni al contorno di Dirichlet/Neumann definite sul bordo e vettore di permutazione dei nodi.
+    \item \textbf{Output:} Vettore dei termini noti $b$.
+\end{itemize}
+
+Le funzionalit\`a richieste includono:
+\begin{itemize}
+    \item Valutazione della funzione sorgente $f(x, y)$ in corrispondenza di ciascun punto interno della griglia.
+    \item Modifica dei valori in prossimit\`a del bordo per incorporare le condizioni al contorno note (es. traslazione al membro destro dei contributi dei nodi di bordo Dirichlet).
+    \item Riordinamento delle componenti del vettore $b$ in accordo con la permutazione dei nodi adottata per la matrice.
+\end{itemize}
+
+\subsubsection{Strutture Dati}
+Per la memorizzazione e la manipolazione del termine noto si suggerisce:
+\begin{itemize}
+    \item \textbf{Vettore denso:} Un array dinamico \texttt{std::vector<double>} di dimensione pari al numero di nodi interni $|V| = (N-1)^2$.
+\end{itemize}
+
+\subsubsection{Complessit\`a Attesa}
+La valutazione della funzione sorgente e l'applicazione delle condizioni al bordo avvengono puntualmente su ogni nodo interno:
+\begin{itemize}
+    \item La valutazione di ciascun elemento e l'eventuale reindicizzazione richiedono tempo costante $O(1)$ per nodo.
+    \item La complessit\`a temporale attesa complessiva \`e pari a $O(|V|) = O((N-1)^2) = O(N^2)$.
 \end{itemize}
 
 \end{document}
