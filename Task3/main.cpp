@@ -35,7 +35,7 @@ std::vector<int> caricaOrdinamento(int numNodiInterni, bool usaOrderingFile) {
 
 int main(int argc, char* argv[]) {
     // Parametri di input del problema
-    int N = 3;                  // Discretizzazione N x N nodi interni
+    int N = 4;                  // Discretizzazione N x N nodi interni
     double kappa = 1.0;         // Coefficiente di diffusione
     bool usaOrderingFile = true; // true -> ordering.txt | false -> naturale
 
