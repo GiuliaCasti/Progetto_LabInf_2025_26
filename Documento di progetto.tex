@@ -49,29 +49,33 @@ Per la rappresentazione in memoria delle entit\`a coinvolte si adottano le segue
 \subsubsection{Complessit\`a Attesa}
 La generazione della griglia richiede di iterare su tutti i punti del dominio discretizzato per un totale di $(N+1)^2$ elementi. La complessit\`a temporale attesa \`e dunque $O(N^2)$, poich\'e il calcolo delle coordinate di ciascun punto viene eseguito in tempo costante $O(1)$.
 
-\subsection{Sottomodulo 2: Gestione dei dati su file}
+\subsection{Sottomodulo 2: Gestore File}
 
 \subsubsection{Specifiche e Funzionalit\`a}
-Questo componente gestisce la persistenza su disco delle informazioni inerenti al dominio e alla struttura del grafo associato alla discretizzazione.
+Questo componente gestisce le operazioni di I/O su memoria secondaria, occupandosi sia della scrittura (esportazione) sia della lettura (importazione) delle informazioni strutturali e algebriche del problema.
 \begin{itemize}
-    \item \textbf{Input:} Griglia di punti, lista degli archi, lista dei nodi.
-    \item \textbf{Output:} File di testo su memoria secondaria.
+    \item \textbf{Input:} Strutture dati in memoria (griglia, liste di nodi/archi, matrice sparsa $A$, vettore $b$) per le operazioni di scrittura; file di testo memorizzati per le operazioni di lettura.
+    \item \textbf{Output:} File su memoria secondaria per la fase di esportazione; strutture dati caricate in memoria RAM per la fase di importazione.
 \end{itemize}
 
-Nello specifico, il sottomodulo mette a disposizione le funzionalit\`a necessarie per:
+Nello specifico, il sottomodulo mette a disposizione le funzionalità necessarie per:
 \begin{itemize}
-    \item La generazione, scrittura e lettura di un file contenente la lista dei soli punti interni della griglia (escludendo i punti appartenenti al bordo).
-    \item La generazione, scrittura e lettura di un file contenente la lista degli archi che compongono il grafo.
-    \item La generazione, scrittura e lettura di un file contenente la lista dei nodi del grafo.
-    \item La generazione di un file contenente la matrice.
-    \item La generazione di un file contenente i termini noti.
+    \item Generazione, scrittura e lettura del file contenente la lista dei soli punti interni della griglia (escludendo i punti di bordo).
+    \item Generazione, scrittura e lettura del file contenente la lista degli archi che compongono il grafo di adiacenza.
+    \item Generazione, scrittura e lettura del file contenente la lista dei nodi del grafo.
+    \item Generazione, scrittura e lettura del file rappresentante la matrice sparsa dei coefficienti $A$.
+    \item Generazione, scrittura e lettura del file contenente il vettore dei termini noti (\textit{rhs}).
 \end{itemize}
 
 \subsubsection{Strutture Dati}
-Per la fase di esportazione non si rendono necessarie strutture dati complesse aggiuntive in RAM. L'operazione richiede esclusivamente l'apertura e la gestione di canali di comunicazione con lo spazio di I/O (stream di output su file) per la scrittura sequenziale dei dati immagazzinati nelle strutture preesistenti.
+Per il Gestore File non si rendono necessarie strutture dati complesse aggiuntive in RAM. L'operazione richiede esclusivamente la gestione dei flussi di I/O (stream di input/output su file come \texttt{std::ifstream} e \texttt{std::ofstream}) per il trasferimento sequenziale dei dati tra la memoria primaria e i file di testo.
 
 \subsubsection{Complessit\`a Attesa}
-Le operazioni di scrittura su memoria di massa richiedono l'attraversamento sequenziale delle strutture dati ricevute in input. La complessit\`a temporale attesa \`e $O(V + E) = O(N^2)$, in quanto la scrittura di ogni nodo e di ogni arco nel relativo stream di output richiede un numero di operations proporzionale alla dimensione del grafo.
+Le operazioni di lettura e scrittura su memoria di massa richiedono il passaggio sequenziale attraverso i dati:
+\begin{itemize}
+    \item Per i file topologici (nodi e archi): la complessit\`a temporale attesa \`e $O(V + E) = O(N^2)$.
+    \item Per i file algebrici (matrice $A$ e vettore $b$): la complessit\`a temporale attesa \`e proporzionale agli elementi non nulli della matrice e alla dimensione del vettore, ossia $O(|NZ| + |V|) = O(N^2)$.
+\end{itemize}
 
 \subsection{Sottomodulo 3: Creazione del grafo di adiacenza}
 
@@ -169,7 +173,7 @@ Essendo lo stencil limitato a un massimo di 5 elementi non nulli per riga, il nu
 \subsection{Sottomodulo 6: Generazione del termine noto}
 
 \subsubsection{Specifiche e Funzionalit\`a}
-Questo sottomodulo genera il vettore dei termini noti $b$ relativo all'equazione del calore in regime stazionario o al passo temporale della discretizzazione, integrando la sorgente di calore e le condizioni al contorno.
+Questo sottomodulo genera il vettore dei termini noti $b$ (\textit{rhs}) relativo all'equazione del calore in regime stazionario o al passo temporale della discretizzazione, integrando la sorgente di calore e le condizioni al contorno.
 \begin{itemize}
     \item \textbf{Input:} Griglia di punti interni, eventuale funzione sorgente $f(x, y)$, condizioni al contorno di Dirichlet/Neumann definite sul bordo e vettore di permutazione dei nodi.
     \item \textbf{Output:} Vettore dei termini noti $b$.
@@ -193,6 +197,39 @@ La valutazione della funzione sorgente e l'applicazione delle condizioni al bord
 \begin{itemize}
     \item La valutazione di ciascun elemento e l'eventuale reindicizzazione richiedono tempo costante $O(1)$ per nodo.
     \item La complessit\`a temporale attesa complessiva \`e pari a $O(|V|) = O((N-1)^2) = O(N^2)$.
+\end{itemize}
+
+\subsection{Sottomodulo 7: Conversione CSC e Fattorizzazione di Cholesky}
+
+\subsubsection{Specifiche e Funzionalit\`a}
+Questo sottomodulo gestisce la conversione della matrice sparsa simmetrica e definita positiva nel formato compresso per colonne e l'esecuzione della fattorizzazione di Cholesky per la risoluzione del sistema lineare $Ax = b$ (oppure $\tilde{A}y = \tilde{b}$ con la matrice permutata).
+\begin{itemize}
+    \item \textbf{Input:} Matrice sparsa $A$ (in formato COO o CSR) e vettore dei termini noti $b$.
+    \item \textbf{Output:} Matrice triangolare inferiore $L$ della fattorizzazione di Cholesky ($A = L L^T$) in formato CSC e la soluzione del sistema $x$.
+\end{itemize}
+
+Le funzionalit\`a richieste comprendono:
+\begin{itemize}
+    \item Conversione efficiente della struttura della matrice sparsa nel formato CSC (\textit{Compressed Sparse Column}), ottimale per gli algoritmi di fattorizzazione per colonna.
+    \item Calcolo simbolico ed eliminazione per la fattorizzazione di Cholesky $A = L L^T$, sfruttando la simmetria e la struttura sparsa della matrice.
+    \item Risoluzione del sistema tramite sostituzione in avanti ($L y = b$) e sostituzione all'indietro ($L^T x = y$).
+    \item Valutazione dell'impatto del riordinamento dei nodi sulla riduzione del fenomeno di \textit{fill-in} (confrontando il numero di elementi non nulli di $L$ con e senza riordinamento).
+\end{itemize}
+
+\subsubsection{Strutture Dati}
+Per rappresentare la matrice CSC e la fattorizzazione si utilizzano:
+\begin{itemize}
+    \item \textbf{Struttura Matrice CSC:} Vettori dinamici \texttt{std::vector<double>} \texttt{values} per i valori non nulli, \texttt{std::vector<int>} \texttt{row\_indices} per gli indici di riga, e \texttt{std::vector<int>} \texttt{col\_pointers} per i puntatori d'inizio di ciascuna colonna (dimensione $n+1$).
+    \item \textbf{Fattore Cholesky $L$:} Una seconda struttura CSC dedicata alla memorizzazione della matrice triangolare inferiore risultante $L$.
+    \item \textbf{Vettori di lavoro ausiliari:} Vettori densi \texttt{std::vector<double>} per memorizzare i risultati intermedi durante le fasi di eliminazione e di sostituzione avanti/indietro.
+\end{itemize}
+
+\subsubsection{Complessit\`a Attesa}
+L'analisi temporale si articola in due fasi distintive:
+\begin{itemize}
+    \item \textbf{Conversione in CSC:} L'ordinamento e il raggruppamento per colonna dei $|NZ|$ elementi non nulli richiede tempo $O(|NZ| + |V|) = O(N^2)$.
+    \item \textbf{Fattorizzazione di Cholesky:} Su una griglia 2D $N \times N$, la presenza di \textit{fill-in} porta la fattorizzazione ad avere una complessit\`a temporale di $O(N^3) = O(|V|^{3/2})$ in assenza o presenza di opportuno riordinamento (come la \textit{Nested Dissection}), migliorando nettamente rispetto al caso denso $O(|V|^3) = O(N^6)$.
+    \item \textbf{Risoluzione triangolare (Forward/Backward substitution):} Proporzionale al numero di elementi non nulli di $L$, pari a $O(|NZ(L)|) = O(N^2 \log N)$ con riordinamento ottimale.
 \end{itemize}
 
 \end{document}
