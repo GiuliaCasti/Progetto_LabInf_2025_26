@@ -58,7 +58,7 @@ Questo componente gestisce le operazioni di I/O su memoria secondaria, occupando
     \item \textbf{Output:} File su memoria secondaria per la fase di esportazione; strutture dati caricate in memoria RAM per la fase di importazione.
 \end{itemize}
 
-Nello specifico, il sottomodulo mette a disposizione le funzionalit√† necessarie per:
+Nello specifico, il sottomodulo mette a disposizione le funzionalit‡ necessarie per:
 \begin{itemize}
     \item Generazione, scrittura e lettura del file contenente la lista dei soli punti interni della griglia (escludendo i punti di bordo).
     \item Generazione, scrittura e lettura del file contenente la lista degli archi che compongono il grafo di adiacenza.
@@ -230,6 +230,37 @@ L'analisi temporale si articola in due fasi distintive:
     \item \textbf{Conversione in CSC:} L'ordinamento e il raggruppamento per colonna dei $|NZ|$ elementi non nulli richiede tempo $O(|NZ| + |V|) = O(N^2)$.
     \item \textbf{Fattorizzazione di Cholesky:} Su una griglia 2D $N \times N$, la presenza di \textit{fill-in} porta la fattorizzazione ad avere una complessit\`a temporale di $O(N^3) = O(|V|^{3/2})$ in assenza o presenza di opportuno riordinamento (come la \textit{Nested Dissection}), migliorando nettamente rispetto al caso denso $O(|V|^3) = O(N^6)$.
     \item \textbf{Risoluzione triangolare (Forward/Backward substitution):} Proporzionale al numero di elementi non nulli di $L$, pari a $O(|NZ(L)|) = O(N^2 \log N)$ con riordinamento ottimale.
+\end{itemize}
+
+\subsection{Sottomodulo 8: Analisi sperimentale e confronto delle prestazioni}
+
+\subsubsection{Specifiche e Funzionalit\`a}
+L'ultimo sottomodulo si occupa dell'integrazione del flusso di calcolo all'interno di un Notebook interattivo per la valutazione delle prestazioni empiriche del solutore e la visualizzazione grafica dei risultati.
+\begin{itemize}
+    \item \textbf{Input:} Sequenza di valori di discretizzazione $N = 32, 64, 128, 256, 512, 1024$.
+    \item \textbf{Output:} Grafici delle prestazioni temporali e di memoria (\textit{fill-in}), grafici della soluzione numerica $u(x,y)$ e mappe di radura (\textit{sparsity patterns}) delle matrici.
+\end{itemize}
+
+Le funzionalit\`a richieste comprendono:
+\begin{itemize}
+    \item Esecuzione della risoluzione del sistema lineare per i differenti valori di $N$ specificati.
+    \item Confronto sistematico dei tempi di calcolo della fattorizzazione e del numero di entrate non-zero ($NZ$) richieste dal fattore $L$, valutati sia con l'ordinamento naturale (lessicografico) sia con il riordinamento proposto (\textit{Nested Dissection}).
+    \item Generazione dei plot della soluzione calcolata $u(x,y)$ sul dominio 2D nel Notebook.
+    \item Visualizzazione grafica della struttura di radura della matrice dei coefficienti $A$ e del fattore di Cholesky $L$ (prima e dopo il riordinamento) mediante la funzione \texttt{matplotlib.pyplot.spy}.
+\end{itemize}
+
+\subsubsection{Strutture Dati}
+Per l'analisi sperimentale si impiegano:
+\begin{itemize}
+    \item \textbf{Array e DataFrame (Python/Jupyter):} Strutture dati tipo \texttt{numpy.ndarray} o \texttt{pandas.DataFrame} per la memorizzazione e organizzazione dei tempi di esecuzione, del conteggio dei non-zeri ($NZ$) e degli errori residui.
+    \item \textbf{Oggetti grafici Matplotlib:} Matrici e griglie di puntatori gestite da librerie esterne per la rappresentazione visiva dei dati.
+\end{itemize}
+
+\subsubsection{Complessit\`a Attesa}
+L'esecuzione dell'analisi benchmark per l'insieme dei valori $N \in \{32, \dots, 1024\}$ richiede:
+\begin{itemize}
+    \item Una complessit\`a temporale dominante determinata dal valore massimo $N_{max} = 1024$. La complessit\`a complessiva delle simulazioni \`e $O(\sum N^3) = O(N_{max}^3)$.
+    \item La generazione visiva dei pattern di radura tramite \texttt{spy} e la costruzione dei plot 2D/3D introducono un costo proporzionale unicamente al numero di elementi da tracciare, ovvero $O(|NZ(L)|)$ per ogni configurazione testata.
 \end{itemize}
 
 \end{document}
