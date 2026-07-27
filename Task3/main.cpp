@@ -35,9 +35,11 @@ std::vector<int> caricaOrdinamento(int numNodiInterni, bool usaOrderingFile) {
 
 int main(int argc, char* argv[]) {
     // Parametri di input del problema
-    int N = 4;                  // Discretizzazione N x N nodi interni
-    double kappa = 1.0;         // Coefficiente di diffusione
-    bool usaOrderingFile = true; // true -> ordering.txt | false -> naturale
+    int N = std::stoi(argv[1]);                 // Discretizzazione N x N nodi interni
+    double kappa = 1.0;                         // Coefficiente di diffusione
+    
+    std::string ordering = argv[2];             // true -> ordering.txt | false -> naturale
+    bool usaOrderingFile = (ordering == "true" || ordering == "1");
 
     // Definizione delle funzioni f(x, y) e g(x, y) tramite lambda expression
     auto f = [](double x, double y) { return 1.0; }; // Termine noto f(x, y) = 1

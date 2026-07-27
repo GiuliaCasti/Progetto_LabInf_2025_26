@@ -37,11 +37,12 @@ void stampaArchi(const Archi& archi) {
         std::cout << "Arco " << arco.id << ": Nodo " 
                   << arco.nodo1 << " <-> Nodo " 
                   << arco.nodo2 << "\n";
+
     }
 }
 
 int main(int argc, char* argv[]) {
-    int N = 4; // Dimensione della griglia (N x N) per i nodi interni
+    int N = std::stoi(argv[1]); // Dimensione della griglia (N x N) per i nodi interni
 
     // Genera la griglia [0, 1]^2 con discretizzazione (N+2) x (N+2)
     Griglia griglia = GeneratoreGriglia::generaGriglia(N);
