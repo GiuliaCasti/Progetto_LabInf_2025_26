@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include <cmath>
 
 // Esegue la partizione geometrica di un insieme di nodi
 void partizionaNodi(const std::vector<Nodo>& nodiIn, 

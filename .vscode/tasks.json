@@ -1,0 +1,30 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Compila intero progetto C++",
+            "command": "C:\\MinGW\\bin\\g++.exe",
+            "args": [
+                "-g",
+                "${workspaceFolder}\\Task1\\main.cpp",
+                "${workspaceFolder}\\Task1\\GeneratoreGriglia.cpp",
+                "${workspaceFolder}\\Task1\\GeneratoreGrafo.cpp",
+                "${workspaceFolder}\\Task1\\..\\GestioneFile\\GestioneFile.cpp",
+                "-o",
+                "${workspaceFolder}\\Task1\\main.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$g++"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Compila esplicitamente i file del progetto"
+        }
+    ]
+}
