@@ -102,6 +102,23 @@ Archi GestioneFile::leggiFileConnectivity(const std::string& nomeFile) {
     return archi;
 }
 
+Nodi GestioneFile::leggiGrafoCompleto(const std::string& fileCoords, const std::string& fileConnectivity) {
+    // 1. Leggiamo i nodi (id, indice, coordinate) - adiacenti resta vuoto per ora
+    Nodi nodi = leggiFileCoords(fileCoords);
+
+    // 2. Leggiamo gli archi e ricostruiamo l'adiacenza bidirezionale
+    Archi archi = leggiFileConnectivity(fileConnectivity);
+    for (const auto& arco : archi) {
+        // connectivity.txt salva ogni arco una sola volta (nodo1 < nodo2):
+        // aggiungiamo l'adiacenza in ENTRAMBE le direzioni, come faceva
+        // generaNodiInterni nel Task 1 per un grafo non orientato.
+        nodi[arco.nodo1].adiacenti.push_back(arco.nodo2);
+        nodi[arco.nodo2].adiacenti.push_back(arco.nodo1);
+    }
+
+    return nodi;
+}
+
 void GestioneFile::generaFileNodiPartizionati(const std::vector<MappaturaNodo>& ordinamento, const std::string& nomeFile) {
     std::ofstream file(nomeFile);
     if (!file.is_open()) {

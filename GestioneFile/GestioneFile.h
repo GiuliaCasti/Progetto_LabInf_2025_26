@@ -28,6 +28,9 @@ public:
     // Legge il file connectivity.txt e ricostruisce il vettore di archi corrispondente.
     static Archi leggiFileConnectivity(const std::string& nomeFile);
 
+    //
+    static Nodi leggiGrafoCompleto(const std::string& fileCoords, const std::string& fileConnectivity);
+
     // Funzione per salvare l'ordinamento Nested Dissection su file
     static void generaFileNodiPartizionati(const std::vector<MappaturaNodo>& ordinamento, const std::string& nomeFile);
 

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <unordered_set>
 
 // Esegue la partizione geometrica di un insieme di nodi
 void partizionaNodi(const std::vector<Nodo>& nodiIn, 
@@ -43,6 +44,25 @@ void partizionaNodi(const std::vector<Nodo>& nodiIn,
     }
 }
 
+// Verifica, usando l'adiacenza del grafo (non le coordinate), che nessun nodo
+// dell'insieme A sia collegato a un nodo dell'insieme B. Serve a controllare
+// che il separatore geometrico trovato sia anche un separatore valido nel grafo.
+bool insiemiSonoDisconnessi(const std::vector<Nodo>& A, const std::vector<Nodo>& B) {
+    std::unordered_set<int> idB;
+    for (const auto& nodo : B) {
+        idB.insert(nodo.id);
+    }
+
+    for (const auto& nodo : A) {
+        for (int adiacenteId : nodo.adiacenti) {
+            if (idB.count(adiacenteId) > 0) {
+                return false; // trovato un arco tra A e B: non sono disconnessi
+            }
+        }
+    }
+    return true;
+}
+
 // Funzione ricorsiva di Nested Dissection
 void PartizionatoreGrafo::eseguiNestedDissectionRicorsiva(const std::vector<Nodo>& sottoNodi, 
                                      bool dividiPerX, 
@@ -65,6 +85,13 @@ void PartizionatoreGrafo::eseguiNestedDissectionRicorsiva(const std::vector<Nodo
 
     // Partizioniamo il sottografo corrente
     partizionaNodi(sottoNodi, dividiPerX, V1, V2, VS);
+
+
+    // Verifica topologica: usiamo il grafo per controllare che il separatore
+    // geometrico sia anche un separatore valido nell'adiacenza del grafo.
+    if (!insiemiSonoDisconnessi(V1, V2)) {
+        std::cerr << "Attenzione: V1 e V2 non sono disconnessi nel grafo!\n";
+    }
 
     // 1. Applichiamo la ricorsione su V1 (invertendo l'asse di taglio: X -> Y -> X...)
     eseguiNestedDissectionRicorsiva(V1, !dividiPerX, ordinamentoFinale, contatoreNuovoIndice);
