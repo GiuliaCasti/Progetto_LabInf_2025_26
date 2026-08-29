@@ -26,6 +26,16 @@ Nodi GeneratoreGrafo::generaNodiInterni(int N) {
     // Nota: assumiamo che N sia il numero di nodi interni per lato
     const double h = 1.0 / (N + 1); // Passo di discretizzazione per calcolare (x, y)
 
+    // Stencil a 5 punti (senza il centro): le 4 direzioni possibili di un vicino,
+    // espresse come spostamento (di, dj) rispetto al nodo corrente (i, j).
+    // Stesso ordine dei blocchi originali: destra, sinistra, alto, basso.
+    const int direzioni[4][2] = {
+        {+1,  0},  // destra
+        {-1,  0},  // sinistra
+        { 0, +1},  // alto
+        { 0, -1}   // basso
+    };
+
     // Cicliamo SOLO sugli indici interni della griglia: i, j in [1, N]
     for (int i = 1; i <= N; i++) {
         for (int j = 1; j <= N; j++) {
@@ -42,31 +52,19 @@ Nodi GeneratoreGrafo::generaNodiInterni(int N) {
             nodi[n].indice = {i_int, j_int}; // Indice logico nella griglia
             nodi[n].punto = { i * h, j * h }; // Coordinate reali (x, y) nel dominio [0, 1]^2
 
-            // 2. Vicino di DESTRA (i+1, j)
-            if (i < N) {
-                int v_destra = getIndicePuntoInterno(i_int + 1, j_int);
-                nodi[n].adiacenti.push_back(v_destra);
-            }
+            // 2.Proviamo ciascuna delle 4 direzioni: aggiungiamo il vicino solo se resta all'interno del dominio interno [1, N] (altrimenti sarebbe un nodo di bordo)
+            for (const auto& dir : direzioni) {
+                int i_vicino = i + dir[0];
+                int j_vicino = j + dir[1];
 
-            // 3. Vicino di SINISTRA (i-1, j)
-            if (i > 1) {
-                int v_sinistra = getIndicePuntoInterno(i_int - 1, j_int);
-                nodi[n].adiacenti.push_back(v_sinistra);
-            }
-
-            // 4. Vicino in ALTO (i, j+1)
-            if (j < N) {
-                int v_alto = getIndicePuntoInterno(i_int, j_int + 1);
-                nodi[n].adiacenti.push_back(v_alto);
-            }
-
-            // 5. Vicino in BASSO (i, j-1)
-            if (j > 1) {
-                int v_basso = getIndicePuntoInterno(i_int, j_int - 1);
-                nodi[n].adiacenti.push_back(v_basso);
+                if (i_vicino >= 1 && i_vicino <= N && j_vicino >= 1 && j_vicino <= N) {
+                    int v = getIndicePuntoInterno(i_vicino - 1, j_vicino - 1);
+                    nodi[n].adiacenti.push_back(v);
+                }
             }
         }
     }
+
 
     return nodi;
 }
