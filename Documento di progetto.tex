@@ -49,6 +49,12 @@ Per la rappresentazione in memoria delle entit\`a coinvolte si adottano le segue
 \subsubsection{Complessit\`a Attesa}
 La generazione della griglia richiede di iterare su tutti i punti del dominio discretizzato per un totale di $(N+1)^2$ elementi. La complessit\`a temporale attesa \`e dunque $O(N^2)$, poich\'e il calcolo delle coordinate di ciascun punto viene eseguito in tempo costante $O(1)$.
 
+\subsubsection{Sviluppo e Scelte Implementative}
+Il processo di sviluppo è iniziato con la definizione dei tipi globali all'interno di un file header dedicato, \texttt{tipiglobali.h}, all'interno del quale sono state definite le strutture dati fondamentali fino ad arrivare al tipo \texttt{Nodi}. 
+Inizialmente, come esercizio preparatorio per prendere confidenza con le strutture dati, si è scelto di implementare la generazione di una semplice griglia fisica prima di passare alla topologia del grafo. A tale scopo è stata creata la classe 
+\texttt{Generatoregriglia}: si è prima redatto l'header definendo i metodi necessari, e successivamente si è passati all'implementazione nel file \texttt{.cpp}, dove la griglia è stata popolata iterando sulle coordinate spaziali tramite due cicli 
+\texttt{for} innestati.
+
 \subsection{Sottomodulo 2: Gestore File}
 
 \subsubsection{Specifiche e Funzionalit\`a}
@@ -58,7 +64,7 @@ Questo componente gestisce le operazioni di I/O su memoria secondaria, occupando
     \item \textbf{Output:} File su memoria secondaria per la fase di esportazione; strutture dati caricate in memoria RAM per la fase di importazione.
 \end{itemize}
 
-Nello specifico, il sottomodulo mette a disposizione le funzionalit� necessarie per:
+Nello specifico, il sottomodulo mette a disposizione le funzionalit� necessarie per:
 \begin{itemize}
     \item Generazione, scrittura e lettura del file contenente la lista dei soli punti interni della griglia (escludendo i punti di bordo).
     \item Generazione, scrittura e lettura del file contenente la lista degli archi che compongono il grafo di adiacenza.
@@ -111,6 +117,14 @@ Per rappresentare la topologia del grafo in modo efficiente si suggeriscono:
 
 \subsubsection{Complessit\`a Attesa}
 La costruzione del grafo e la determinazione delle adiacenze richiedono una complessit\`a temporale attesa pari a $O(|V|) = O((N-1)^2) = O(N^2)$, poich\'e il grado di ciascun nodo \`e limitato superiormente da 4 e l'identificazione dei vicini viene eseguita in tempo costante.
+
+\subsubsection{Sviluppo e Scelte Implementative}
+Sulla base dell'esperienza acquisita con la classe della griglia, si è passati alla modellizzazione del grafo. Seguendo lo stesso pattern di progettazione, è stato scritto prima l'header con la definizione della classe \texttt{generatoregrafo}, per poi procedere all'implementazione dei metodi nel file \texttt{.cpp}. 
+Durante le primissime fasi di testing e validazione del codice, per facilitare il debugging, l'algoritmo è stato fatto eseguire utilizzando un valore di discretizzazione fisso e molto ridotto ($N=4$). L'uso di un "toy problem" ha permesso di verificare manualmente la correttezza della griglia generata e delle corrispettive liste di adiacenza. 
+Una volta confermato il corretto funzionamento della logica di base, la gestione del parametro di input è stata modificata e generalizzata. Il parametro $N$ è stato trasformato da un singolo valore scalare fisso a un costrutto iterabile (un vettore di valori), in quanto requisito fondamentale per la risoluzione dei task successivi 
+(in particolare per il Task 5 e l'analisi sperimentale). Questa transizione ha permesso di automatizzare l'esecuzione del codice per diverse scale del problema (es. $N \in \{32, 64, 128, \dots\}$) in modo sequenziale, senza necessità di ricompilare il codice ad ogni variazione del dominio.
+Durante lo sviluppo (Task 1), il metodo di calcolo degli archi è stato oggetto di ottimizzazione del codice. Invece di hardcodare e gestire singolarmente ogni direzione per la ricerca dei nodi adiacenti (sopra, sotto, destra, sinistra), si è scelto di implementare un costrutto iterativo (un ciclo for range-based) in grado di scorrere in modo compatto
+le direzioni (array di 2 int), scritte come stencil a 5 punti. Questa scelta progettuale ha reso il codice molto più pulito, scalabile e facile da mantenere, sebbene non abbia alterato il costo computazionale teorico dell'algoritmo, che rimane saldamente $O(N^2)$.
 
 \subsection{Sottomodulo 4: Costruzione dell'ordinamento dei nodi}
 
