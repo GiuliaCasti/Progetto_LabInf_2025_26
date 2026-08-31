@@ -17,7 +17,7 @@ std::vector<int> caricaOrdinamento(int numNodiInterni, bool usaOrderingFile) {
     }
 
     // Altrimenti carichiamo il file ordering.txt
-    std::ifstream fileOrder("FileGenerati/ordering.txt");
+    std::ifstream fileOrder("../FileGenerati/ordering.txt");
     if (!fileOrder.is_open()) {
         std::cerr << "Attenzione: ordering.txt non trovato! Verrà utilizzato l'ordinamento naturale.\n";
         for (int i = 0; i < numNodiInterni; ++i) perm[i] = i;
@@ -52,11 +52,11 @@ int main(int argc, char* argv[]) {
 
     // 2. Generazione e salvataggio della Matrice A
     auto elementiA = GeneratoreMatrice::generaMatriceA(N, kappa, perm);
-    GestioneFile::salvaMatrice(elementiA, "FileGenerati/A.txt");
+    GestioneFile::salvaMatrice(elementiA, "../FileGenerati/A.txt");
 
     // 3. Generazione e salvataggio del Termine Noto rhs
     auto rhs = GeneratoreTermineNoto::generaTermineNoto(N, kappa, f, g, perm);
-    GestioneFile::salvaTerminiNoti(rhs, "FileGenerati/rhs.txt");
+    GestioneFile::salvaTerminiNoti(rhs, "../FileGenerati/rhs.txt");
 
     return 0;
 }
