@@ -64,7 +64,7 @@ Questo componente gestisce le operazioni di I/O su memoria secondaria, occupando
     \item \textbf{Output:} File su memoria secondaria per la fase di esportazione; strutture dati caricate in memoria RAM per la fase di importazione.
 \end{itemize}
 
-Nello specifico, il sottomodulo mette a disposizione le funzionalit� necessarie per:
+Nello specifico, il sottomodulo mette a disposizione le funzionalit\`a necessarie per:
 \begin{itemize}
     \item Generazione, scrittura e lettura del file contenente la lista dei soli punti interni della griglia (escludendo i punti di bordo).
     \item Generazione, scrittura e lettura del file contenente la lista degli archi che compongono il grafo di adiacenza.
@@ -221,6 +221,38 @@ Per rappresentare la matrice sparsa in modo compatto si suggeriscono:
 
 \subsubsection{Complessit\`a Attesa}
 Essendo lo stencil limitato a un massimo di 5 elementi non nulli per riga, il numero totale di elementi non nulli nella matrice $A$ \`e $|NZ| \le 5 |V|$. La complessit\`a temporale attesa per la costruzione della matrice sparsa \`e quindi proporzionale al numero di nodi interni: $O(|V|) = O((N-1)^2) = O(N^2)$.
+
+\subsection{}
+Il sottomodulo è stato implementato nella classe \texttt{GeneratoreMatrice},
+con un unico metodo statico, \texttt{generaMatriceA(N, kappa, perm)}, coerente
+con lo schema architetturale già adottato nei Task precedenti.\\
+
+La costruzione riutilizza lo stesso schema di conversione tra indici logici
+$(i,j)$ e identificatore progressivo già impiegato nel Task 1, tramite una
+funzione ausiliaria locale \texttt{getOldId}: questo garantisce che
+l'identificatore "naturale" di ciascun nodo, calcolato qui, coincida sempre
+con quello prodotto da \texttt{GeneratoreGrafo}, senza dover rileggere il
+grafo generato su file. Tale identificatore naturale viene poi tradotto
+nell'indice di riga/colonna effettivo tramite il vettore di permutazione
+\texttt{perm}, ricevuto come parametro: questo isola completamente la logica
+di assemblaggio dello stencil dalla scelta dell'ordinamento, che resta
+esterna al modulo.\\
+
+Per ciascun nodo interno viene inserito il coefficiente diagonale
+$-4\kappa/h^2$, seguito da un coefficiente $\kappa/h^2$ per ciascuno dei
+vicini effettivamente presenti (le stesse quattro condizioni al contorno
+$i>1$, $i<N$, $j>1$, $j<N$ già usate per l'adiacenza nel Task 1, per escludere
+i vicini che cadrebbero sul bordo del dominio). La permutazione viene
+applicata sia all'indice di riga sia a quello di colonna di ogni entrata,
+cosicché la matrice risultante sia già espressa direttamente
+nell'ordinamento richiesto.\\
+
+Le entrate non vengono accumulate in una struttura a matrice piena, ma in un
+vettore di triple \texttt{(riga, colonna, valore)} tramite il tipo
+\texttt{ElementoMatrice}, un formato coordinato (COO) che rispecchia
+direttamente il formato di riga richiesto per \texttt{A.txt}
+(\texttt{i\ j\ A[i,j]}) e che si converte agevolmente in formato sparso
+compresso nel notebook Python del Task 4. 
 
 \subsection{Sottomodulo 6: Generazione del termine noto}
 
