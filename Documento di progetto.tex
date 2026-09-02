@@ -222,7 +222,7 @@ Per rappresentare la matrice sparsa in modo compatto si suggeriscono:
 \subsubsection{Complessit\`a Attesa}
 Essendo lo stencil limitato a un massimo di 5 elementi non nulli per riga, il numero totale di elementi non nulli nella matrice $A$ \`e $|NZ| \le 5 |V|$. La complessit\`a temporale attesa per la costruzione della matrice sparsa \`e quindi proporzionale al numero di nodi interni: $O(|V|) = O((N-1)^2) = O(N^2)$.
 
-\subsection{}
+\subsection{Sviluppo e Scelte Implementative}
 Il sottomodulo è stato implementato nella classe \texttt{GeneratoreMatrice},
 con un unico metodo statico, \texttt{generaMatriceA(N, kappa, perm)}, coerente
 con lo schema architetturale già adottato nei Task precedenti.\\
@@ -282,6 +282,33 @@ La valutazione della funzione sorgente e l'applicazione delle condizioni al bord
     \item La valutazione di ciascun elemento e l'eventuale reindicizzazione richiedono tempo costante $O(1)$ per nodo.
     \item La complessit\`a temporale attesa complessiva \`e pari a $O(|V|) = O((N-1)^2) = O(N^2)$.
 \end{itemize}
+
+\subsection{Sviluppo e Scelte Implementative}
+Il sottomodulo è stato implementato nella classe \texttt{GeneratoreTermineNoto},
+con un unico metodo statico, \texttt{generaTermineNoto(N, kappa, f, g, perm)},
+speculare per struttura a \texttt{GeneratoreMatrice}.\\
+
+Come per la matrice $A$, la posizione di ciascun valore nel vettore risultante
+è determinata tramite la stessa conversione indici $(i,j) \to$ identificatore
+naturale già impiegata nei moduli precedenti, seguita dall'applicazione della
+permutazione \texttt{perm}: questo garantisce che le componenti del vettore
+$b$ restino coerenti riga per riga con quelle della matrice $A$, qualunque sia
+l'ordinamento scelto.\\
+
+Per ciascun nodo interno il valore viene inizializzato a $-f(x,y)$, la
+sorgente di calore valutata nelle coordinate del nodo. Se il nodo è adiacente
+al bordo del dominio (verificato tramite le stesse quattro condizioni $i=1$,
+$i=N$, $j=1$, $j=N$ usate per individuare i vicini mancanti nell'adiacenza del
+Task 1), viene sottratto anche il contributo $\kappa/h^2 \cdot g(x,y)$
+corrispondente, così da incorporare direttamente nel termine noto le
+condizioni al bordo di Dirichlet, senza introdurre ulteriori incognite. Sia
+$f$ che $g$ sono ricevute come parametri di tipo \texttt{std::function}
+anziché definite internamente al modulo: questa scelta consente di
+ridefinirle in \texttt{main.cpp} senza modificare l'implementazione, e rende
+immediata l'estensione opzionale a una condizione al bordo $u_0(x,y) \neq 0$
+prevista dalla traccia, che richiederebbe la sola sostituzione della lambda
+\texttt{g} passata alla chiamata. Nel caso qui trattato, $g(x,y) \equiv 0$.
+
 
 \subsection{Sottomodulo 7: Conversione CSC e Fattorizzazione di Cholesky}
 
