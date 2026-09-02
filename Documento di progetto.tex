@@ -158,6 +158,44 @@ La procedura ricorsiva di dissecazione divide il dominio ad ogni livello. La com
     \item Risolvendo la relazione di ricorrenza $T(V') = 2 T(V'/2) + O(V')$, si ottiene una complessit\`a temporale complessiva attesa di $O(|V| \log |V|) = O(N^2 \log N)$.
 \end{itemize}
 
+\subsection{Sviluppo e Scelte Implementative}
+Come per il Task1 è stato inanzitutto creato un header file dedicato, in cui 
+è stata definita la classe \texttt{PartizionatoreGrafo}, in cui è stato definito il metodo \texttt{eseguiNestedDissectionRicorsiva}:
+La scelta di esporre un'unica funzione pubblica, rispetto ai tre sotto-passi
+inizialmente ipotizzati nella progettazione (lettura del grafo, ricerca del
+separatore, scrittura della permutazione), riflette una decomposizione diversa
+da quella tratteggiata in fase di specifica iniziale: la lettura dei file è stata
+delegata al modulo \texttt{GestioneFile} (esteso appositamente, si veda oltre),
+mentre la logica di partizionamento vera e propria è stata isolata in una
+funzione ausiliaria interna, non esposta nell'header, poiché di interesse
+esclusivamente implementativo.\\
+La suddivisione di un insieme di nodi nei tre sottoinsiemi $V_1$, $V_2$ e $V_S$
+è realizzata dalla funzione ausiliaria \texttt{partizionaNodi}, che implementa
+l'euristica geometrica suggerita dalla traccia: dato l'asse di taglio corrente
+(\texttt{x} o \texttt{y}, selezionato dal parametro booleano \texttt{dividiPerX}),
+vengono estratte le coordinate distinte dei nodi lungo quell'asse, ordinate, e
+se ne seleziona il valore mediano $\hat{x}$ (o $\hat{y}$) come piano di taglio.
+Ogni nodo viene quindi classificato confrontando la propria coordinata con
+$\hat{x}$: i nodi con coordinata inferiore formano $V_1$, quelli con coordinata
+superiore $V_2$, quelli coincidenti (entro una tolleranza $10^{-9}$, necessaria
+per gestire correttamente gli errori di arrotondamento tipici
+dell'aritmetica in virgola mobile) formano il separatore $V_S$.\\
+Per verificare che il separatore individuato geometricamente sia anche un
+separatore valido dal punto di vista topologico, cioè che $V_1$ e $V_2$ non
+presentino archi diretti tra loro nel grafo, è stata introdotta una
+funzione di validazione \texttt{insiemiSonoDisconnessi}. A tale scopo si è reso
+necessario estendere il modulo \texttt{GestioneFile} con una nuova funzione,
+\texttt{leggiGrafoCompleto}, che combina la lettura di \texttt{coords.txt} e
+\texttt{connectivity.txt} per ricostruire non solo le coordinate dei nodi, ma
+anche le rispettive adiacenze.\\
+Il file \texttt{main.cpp} del Task 2 si limita a orchestrare i passaggi
+precedenti: legge il grafo completo tramite \texttt{leggiGrafoCompleto}, avvia
+la ricorsione sull'intero insieme di nodi con un taglio iniziale lungo l'asse
+$x$, e salva la permutazione ottenuta su \texttt{ordering.txt} tramite la
+funzione \texttt{generaFileNodiPartizionati} (anch'essa aggiunta a
+\texttt{GestioneFile}), che scrive ciascuna coppia (nuovo indice, identificatore
+originale) su una riga distinta, nel formato richiesto dalla traccia.\\
+
 \subsection{Sottomodulo 5: Generazione della matrice sparsa}
 
 \subsubsection{Specifiche e Funzionalit\`a}
