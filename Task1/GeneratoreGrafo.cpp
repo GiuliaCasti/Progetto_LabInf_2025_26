@@ -48,11 +48,12 @@ Nodi GeneratoreGrafo::generaNodiInterni(int N) {
             int n = getIndicePuntoInterno(i_int, j_int); 
 
             // 1. Inizializziamo i dati del Nodo corrente
-            nodi[n].id = n;
+            nodi[n].id = n; 
             nodi[n].indice = {i_int, j_int}; // Indice logico nella griglia
             nodi[n].punto = { i * h, j * h }; // Coordinate reali (x, y) nel dominio [0, 1]^2
 
-            // 2.Proviamo ciascuna delle 4 direzioni: aggiungiamo il vicino solo se resta all'interno del dominio interno [1, N] (altrimenti sarebbe un nodo di bordo)
+            // 2.Proviamo ciascuna delle 4 direzioni: aggiungiamo il vicino solo se resta all'interno del dominio interno [1, N] 
+            // (altrimenti sarebbe un nodo di bordo)
             for (const auto& dir : direzioni) {
                 int i_vicino = i + dir[0];
                 int j_vicino = j + dir[1];
