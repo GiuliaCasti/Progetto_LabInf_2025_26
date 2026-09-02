@@ -397,7 +397,7 @@ $N$ testato.
 \subsubsection{Specifiche e Funzionalit\`a}
 L'ultimo sottomodulo si occupa dell'integrazione del flusso di calcolo all'interno di un Notebook interattivo per la valutazione delle prestazioni empiriche del solutore e la visualizzazione grafica dei risultati.
 \begin{itemize}
-    \item \textbf{Input:} Sequenza di valori di discretizzazione $N = 32, 64, 128, 256, 512, 1024$.
+    \item \textbf{Input:} Sequenza di valori di discretizzazione $N = 32, 64, 128, 256$.
     \item \textbf{Output:} Grafici delle prestazioni temporali e di memoria (\textit{fill-in}), grafici della soluzione numerica $u(x,y)$ e mappe di radura (\textit{sparsity patterns}) delle matrici.
 \end{itemize}
 
@@ -417,10 +417,98 @@ Per l'analisi sperimentale si impiegano:
 \end{itemize}
 
 \subsubsection{Complessit\`a Attesa}
-L'esecuzione dell'analisi benchmark per l'insieme dei valori $N \in \{32, \dots, 1024\}$ richiede:
+L'esecuzione dell'analisi benchmark per l'insieme dei valori $N \in \{32, \dots, 256\}$ richiede:
 \begin{itemize}
-    \item Una complessit\`a temporale dominante determinata dal valore massimo $N_{max} = 1024$. La complessit\`a complessiva delle simulazioni \`e $O(\sum N^3) = O(N_{max}^3)$.
+    \item Una complessit\`a temporale dominante determinata dal valore massimo $N_{max} = 256$. La complessit\`a complessiva delle simulazioni \`e $O(\sum N^3) = O(N_{max}^3)$.
     \item La generazione visiva dei pattern di radura tramite \texttt{spy} e la costruzione dei plot 2D/3D introducono un costo proporzionale unicamente al numero di elementi da tracciare, ovvero $O(|NZ(L)|)$ per ogni configurazione testata.
 \end{itemize}
+
+\subsection{Sviluppo e scelte implementative}
+
+L'implementazione del Task 5 ha richiesto un'intensa
+e strutturata fase di debugging e validazione dei dati. 
+La primissima stesura del codice presentava infatti alcune anomalie:
+ oltre al già citato problema della libreria di Cholesky affrontato nel Task 4,
+  che appiattiva i vantaggi della sparsità, si è riscontrato un disallineamento
+   nei file di output generati a causa di una mancata e corretta ricompilazione dei binari C++
+    e di conflitti nei percorsi di esecuzione.
+
+\paragraph{Esami di Diagnostica e Validazione}
+Per isolare e correggere i problemi di compilazione e le anomalie computazionali riscontrate (in particolare gli errori di I/O sui file e l'iniziale anomalia sulla fattorizzazione di Cholesky), è stata introdotta una suite sequenziale di esami di diagnostica all'interno del notebook Python. 
+Ogni test è stato progettato per validare uno specifico passaggio della pipeline:
+
+\begin{itemize}
+    \item \textbf{1. Controllo preliminare delle dimensioni dei file di output}
+    \begin{itemize}
+        \item \textbf{Cosa fa:} Verifica la dimensione effettiva dei file \texttt{rhs.txt} e \texttt{ordering.txt}.
+        \item \textbf{Perché lo fa:} Per individuare tempestivamente l'errore di mancata compilazione o esecuzione dei task C++, garantendo che Python non stesse lavorando su dati obsoleti generati in esecuzioni precedenti.
+        \item \textbf{Come lo fa:} Caricando i file in memoria tramite \texttt{np.loadtxt} e stampandone la lunghezza con la funzione \texttt{len()}.
+    \end{itemize}
+
+    \item \textbf{2. Test di scalabilità spaziale (Ordinamento Naturale per $N=32$ e $N=64$)}
+    \begin{itemize}
+        \item \textbf{Cosa fa:} Ispeziona la generazione dei file \texttt{coords.txt}, \texttt{ordering.txt}, \texttt{A.txt} e \texttt{rhs.txt} impostando \texttt{usaOrdering=0}.
+        \item \textbf{Perché lo fa:} Per confermare che i sottomoduli C++ scalassero correttamente le dimensioni delle strutture dati all'aumentare dei nodi interni del dominio.
+        \item \textbf{Come lo fa:} Eseguendo i Task 1, 2 e 3 passandogli progressivamente i parametri $N=32$ e $N=64$, e ispezionando la \texttt{shape} degli array risultanti.
+    \end{itemize}
+\newpage
+    \item \textbf{3. Test di scalabilità spaziale (Nested Dissection per $N=32$ e $N=64$)}
+    \begin{itemize}
+        \item \textbf{Cosa fa:} Ripete i test di generazione strutturale e algebrica impostando il flag \texttt{usaOrdering=1}.
+        \item \textbf{Perché lo fa:} Per accertare che il parametro di selezione dell'ordinamento venisse recepito dal backend C++ e innescasse la corretta logica di assemblaggio permutato per la matrice e il termine noto.
+        \item \textbf{Come lo fa:} Analogamente al test precedente, alterando unicamente il flag passato via linea di comando a \texttt{esecuzioneTask3}.
+    \end{itemize}
+
+    \item \textbf{4. Validazione matematica della permutazione topologica}
+    \begin{itemize}
+        \item \textbf{Cosa fa:} Analizza le proprietà algebriche dei vettori estratti dal file \texttt{ordering.txt} (nuovi indici e vecchi indici).
+        \item \textbf{Perché lo fa:} Per accertarsi che il separatore di vertici calcolato nel Task 2 producesse una permutazione rigorosa, ossia una biiezione perfetta senza saltare alcun nodo interno né creare duplicati o fuori limite.
+        \item \textbf{Come lo fa:} Estrapolando il valore minimo (\texttt{min()}), massimo (\texttt{max()}) e la conta degli elementi unici (\texttt{len(np.unique())}) di entrambe le colonne del file di ordinamento.
+    \end{itemize}
+
+    \item \textbf{5. Controllo di coerenza strutturale tra matrici (Naturale vs Ordinato)}
+    \begin{itemize}
+        \item \textbf{Cosa fa:} Confronta in parallelo \texttt{A\_naturale} con \texttt{A\_ordered} e \texttt{rhs\_naturale} con \texttt{rhs\_ordered}.
+        \item \textbf{Perché lo fa:} Per garantire matematicamente che l'ordinamento di tipo Nested Dissection non alterasse il contenuto del sistema lineare, ma producesse la medesima matrice e lo stesso termine noto unicamente permutati (stesso numero di incognite e di equazioni).
+        \item \textbf{Come lo fa:} Eseguendo la pipeline completa prima per \texttt{usaOrdering=0} e poi per \texttt{usaOrdering=1} (con $N=64$), stampandone le rispettive proprietà \texttt{shape} a schermo e verificandone l'uguaglianza.
+    \end{itemize}
+
+    \item \textbf{6. Test di robustezza della fattorizzazione di Cholesky}
+    \begin{itemize}
+        \item \textbf{Cosa fa:} Mette alla prova l'algoritmo di fattorizzazione \texttt{my\_cholesky} sulle due differenti versioni del sistema lineare.
+        \item \textbf{Perché lo fa:} Per confermare che la matrice risultasse definita positiva e strutturalmente integra per l'algoritmo \texttt{sksparse.cholmod} in ambedue i casi, scongiurando eventuali fallimenti numerici legati a riordinamenti errati.
+        \item \textbf{Come lo fa:} Passando sequenzialmente \texttt{A\_nat} e \texttt{A\_ord} alla funzione e inserendo due istruzioni \texttt{print("OK")} a valle delle chiamate, per confermarne l'esecuzione al netto di eventuali eccezioni \textit{MatrixNotPositiveDefinite}.
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Correzione e Ottimizzazione del Rendering 3D}
+L'ultimo e fondamentale intervento ha riguardato il plot della piastra termica. 
+L'implementazione originaria impiegava il costrutto \texttt{np.linspace(0, 1, N)} 
+e una \textit{list comprehension} che sfruttava le variabili $x$ e $y$ come indici:
+\begin{verbatim}
+x = np.linspace(0,1,N)
+y = np.linspace(0,1,N)
+plottedU = [[soluzioneU[(N,0)][x*N+y] for x in range(N)] for y in range(N)]
+\end{verbatim}
+
+Questa logica era concettualmente e matematicamente errata per due motivi:
+\begin{enumerate}
+    \item \textbf{Errore nel Dominio Spaziale:} La funzione \texttt{linspace(0,1,N)} 
+    campiona $N$ punti estremi inclusi. Tuttavia, il sistema lineare calcola la temperatura 
+    \textit{esclusivamente} sui nodi interni della griglia, il cui passo spaziale corretto 
+    è $h = \frac{1}{N+1}$. Di conseguenza, le coordinate fisiche reali degli $N$ nodi interni
+     lungo un asse non partono da $0$, ma spaziano da $\frac{1}{N+1}$ a $\frac{N}{N+1}$.
+    \item \textbf{Shadowing e Fuori Limite (Out of Bounds):} L'uso delle stesse lettere ($x$ ed $y$) 
+    sia per l'array spaziale che come iteratori per il ciclo \texttt{range(N)} generava ambiguità a 
+    livello di scope delle variabili e un calcolo impreciso o fuori limite dell'indice \texttt{[x*N+y]}.
+\end{enumerate}
+
+Il blocco è stato pertanto riscritto e normalizzato. Per generare l'esatta griglia di coordinate
+ \texttt{meshgrid} dei punti interni, ci si è avvalsi della formula \texttt{np.arange(1, N+1) / (N+1)}. 
+ L'estrazione della soluzione esatta $u$ è stata poi disaccoppiata dall'array spaziale, adottando iteratori 
+ interi puri ($i$ e $j$) per mappare in modo esatto la stringa monodimensionale \texttt{u\_naturale[i*N + j]} 
+ sulla matrice topologica bidimensionale \texttt{Z}, eliminando i crash di indicizzazione e restituendo una proiezione 
+ \texttt{plot\_surface} coerente con il dominio matematico studiato.
+
 
 \end{document}
