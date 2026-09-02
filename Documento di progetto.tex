@@ -343,6 +343,55 @@ L'analisi temporale si articola in due fasi distintive:
     \item \textbf{Risoluzione triangolare (Forward/Backward substitution):} Proporzionale al numero di elementi non nulli di $L$, pari a $O(|NZ(L)|) = O(N^2 \log N)$ con riordinamento ottimale.
 \end{itemize}
 
+
+\subsection{Sviluppo e scelte implementative}
+Una prima versione, precedente alla corretta installazione di
+\texttt{scikit-sparse} sull'ambiente di sviluppo, ha adottato temporaneamente
+una fattorizzazione di Cholesky densa (\texttt{scipy.linalg.cholesky}, previa
+conversione esplicita della matrice in un array NumPy pieno). Questa
+soluzione, pur numericamente corretta e utile per validare la correttezza
+dell'intera pipeline (lettura dei dati, risoluzione dei sistemi triangolari,
+calcolo del residuo) per valori di $N$ contenuti, non sfrutta in alcun modo la
+sparsità della matrice: il costo computazionale e di memoria cresce con
+l'intera dimensione $N^2 \times N^2$ della matrice densa, rendendola
+inutilizzabile per i valori di $N$ richiesti dall'analisi sperimentale del
+Task 5, e vanificando inoltre l'effetto del riordinamento \textit{Nested Dissection} del Task 2, che agisce specificamente sulla struttura sparsa
+della fattorizzazione.\\
+
+L'installazione di \texttt{scikit-sparse} si è rivelata l'ostacolo principale
+nello sviluppo di questo sottomodulo: la libreria dipende dalle librerie
+native SuiteSparse/CHOLMOD, la cui compilazione tramite \texttt{pip} non è
+risultata praticabile sull'ambiente Windows utilizzato. La soluzione adottata
+è stata la creazione di un ambiente \texttt{conda} dedicato (tramite
+\texttt{conda-forge}, che distribuisce SuiteSparse già precompilato), isolato
+dall'ambiente Python preesistente, la cui versione (Python 3.9) risultava
+inferiore al requisito minimo della libreria (Python $\geq$ 3.10).\\
+
+Una volta resa disponibile la libreria, un primo tentativo di adattare il
+codice suggerito dalla traccia ha prodotto un errore di esecuzione, causato
+da un cambiamento nell'interfaccia della funzione \texttt{cholesky()}
+introdotto nella versione più recente di \texttt{scikit-sparse}: la funzione
+non restituisce più un oggetto \texttt{Factor} dotato di un metodo
+\texttt{L()}, bensì la matrice fattorizzata direttamente (o, se viene
+specificato un ordinamento, una tupla contenente la matrice e il vettore di
+permutazione). La correzione è consistita nell'aggiungere il parametro
+\texttt{lower=True}, non presente nello snippet originale ma necessario per
+ottenere la fattorizzazione $L$ triangolare inferiore anziché la sua
+trasposta $R$ (restituita per default), mantenendo per il resto la struttura
+del codice suggerito dalla traccia (\texttt{order="natural"}, accesso tramite
+indicizzazione \texttt{factor[0]}).\\
+
+Un'ultima criticità è emersa solo in fase di analisi sperimentale su valori
+di $N$ crescenti (Task 5): un errore di fattorizzazione (matrice non definita
+positiva) che, ad un'analisi più approfondita, non era riconducibile alla
+fattorizzazione in sé, ma a un disallineamento nei percorsi dei file
+intermedi tra i Task precedenti, che impediva la corretta rigenerazione di
+\texttt{coords.txt} e \texttt{connectivity.txt} per valori di $N$ diversi da
+quello di un'esecuzione precedente. Risolto tale disallineamento, la
+fattorizzazione sparsa risulta corretta e stabile per l'intero intervallo di
+$N$ testato.
+
+
 \subsection{Sottomodulo 8: Analisi sperimentale e confronto delle prestazioni}
 
 \subsubsection{Specifiche e Funzionalit\`a}
